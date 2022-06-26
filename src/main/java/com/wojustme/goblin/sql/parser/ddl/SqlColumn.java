@@ -1,5 +1,9 @@
 package com.wojustme.goblin.sql.parser.ddl;
 
+import com.google.common.base.Preconditions;
+import com.wojustme.goblin.meta.catalog.model.CatalogColumn;
+import com.wojustme.goblin.meta.catalog.model.DataType;
+import com.wojustme.goblin.sql.ex.SqlRuntimeException;
 import org.apache.calcite.sql.SqlCall;
 import org.apache.calcite.sql.SqlDataTypeSpec;
 import org.apache.calcite.sql.SqlIdentifier;
@@ -9,6 +13,8 @@ import org.apache.calcite.sql.SqlWriter;
 import org.apache.calcite.sql.parser.SqlParserPos;
 
 import java.util.List;
+import java.util.Locale;
+
 /** A {@link SqlNode} used to define a column when create table. */
 public class SqlColumn extends SqlCall {
   private final SqlIdentifier columnIdentifier;
@@ -57,6 +63,20 @@ public class SqlColumn extends SqlCall {
   @Override
   public List<SqlNode> getOperandList() {
     return null;
+  }
+
+  public CatalogColumn buildCatalogColumn() {
+    Preconditions.checkArgument(
+        columnIdentifier.names.size() > 0 && columnIdentifier.names.size() <= 2);
+    final String columnName = columnIdentifier.names.get(0);
+    final String typeStr = dataTypeSpec.getTypeName().toString();
+    final DataType dataType = switch (typeStr.toLowerCase(Locale.ROOT)) {
+      case "string", "varchar" ->DataType.STRING;
+      case "bigint" -> DataType.LONG;
+      default -> throw new SqlRuntimeException("Not support type: " + dataTypeSpec);
+    };
+
+   return new CatalogColumn(columnName, dataType, nullable);
   }
 
   public static class DefaultValue {

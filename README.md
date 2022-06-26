@@ -1,5 +1,7 @@
 # Goblin
 
+![Badger mascot](docs/images/goblin.jpeg)
+
 Goblin is a database written in pure Java. It's an experimental project to help us understand the database's principle.
 
 ## AIMS:

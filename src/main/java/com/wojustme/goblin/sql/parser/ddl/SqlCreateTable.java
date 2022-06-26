@@ -1,6 +1,12 @@
 package com.wojustme.goblin.sql.parser.ddl;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.wojustme.goblin.meta.catalog.CatalogService;
+import com.wojustme.goblin.meta.catalog.model.CatalogColumn;
+import com.wojustme.goblin.meta.catalog.model.CatalogTable;
+import com.wojustme.goblin.meta.catalog.model.TableType;
 import com.wojustme.goblin.sql.util.SqlUtils;
 import org.apache.calcite.sql.SqlCall;
 import org.apache.calcite.sql.SqlCreate;
@@ -67,5 +73,20 @@ public class SqlCreateTable extends SqlCreate implements GoblinSqlDdl {
 
   @Override
   public void exec(CatalogService catalogService) {
+    final ImmutableList<String> names = tableIdentifier.names;
+    final int identifierNameSize = names.size();
+    Preconditions.checkArgument(identifierNameSize <= 2 && identifierNameSize > 0);
+    String dbName = catalogService.defaultDb();
+    if (identifierNameSize == 2) {
+      dbName = names.get(0);
+    }
+    final String tableName = names.get(identifierNameSize - 1);
+
+    final List<CatalogColumn> catalogColumns =
+        columns.stream().map(sqlNode -> ((SqlColumn) sqlNode).buildCatalogColumn()).toList();
+
+    final CatalogTable catalogTable =
+        new CatalogTable(dbName, tableName, TableType.ENTITY, catalogColumns);
+    catalogService.createTable(catalogTable);
   }
 }

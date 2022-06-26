@@ -2,6 +2,7 @@ package com.wojustme.goblin.server.mysql.handler;
 
 import com.wojustme.goblin.common.UserSession;
 import com.wojustme.goblin.meta.catalog.impl.CatalogServiceImpl;
+import com.wojustme.goblin.meta.catalog.impl.InMemoryCatalogService;
 import com.wojustme.goblin.server.SessionHandler;
 import com.wojustme.goblin.server.mysql.common.ProtocolConstants;
 import com.wojustme.goblin.server.mysql.decoder.AbstractPacketDecoder;
@@ -93,7 +94,7 @@ public class MyServerHandler extends ChannelInboundHandlerAdapter {
     if (StringUtils.isNotEmpty(response.database)) {
       userSession.setDatabase(response.database);
     }
-    final SessionHandler handler = new SessionHandler(userSession, new CatalogServiceImpl("default"));
+    final SessionHandler handler = new SessionHandler(userSession, new InMemoryCatalogService("default"));
     sessionHandlers.put(sessionId, handler);
 
     // remove auth connect decoder

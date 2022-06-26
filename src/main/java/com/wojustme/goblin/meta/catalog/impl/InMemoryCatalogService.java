@@ -33,8 +33,11 @@ public class InMemoryCatalogService implements CatalogService {
 
   @Override
   public CatalogDatabase getDatabase(String name) {
-    throw new NotSupportException(
-        "Not support method of `getDatabase` for " + this.getClass().getName());
+    if (StringUtils.equals(name, defaultDb)) {
+      return new CatalogDatabase(name);
+    } else {
+      return null;
+    }
   }
 
   @Override
@@ -42,7 +45,7 @@ public class InMemoryCatalogService implements CatalogService {
     final CatalogTable existTable = getTable(catalogTable.dbName, catalogTable.tableName);
     if (existTable != null) {
       throw new MetaRuntimeException(
-          "Table %s has existed in database %s", catalogTable.dbName, catalogTable.tableName);
+          "Table %s has existed in database %s", catalogTable.tableName, catalogTable.dbName);
     }
     tables.put(catalogTable.tableName, catalogTable);
   }
