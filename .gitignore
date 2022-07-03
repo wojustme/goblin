@@ -4,3 +4,6 @@ target/
 
 # IDEA
 .idea/
+
+# tmp data dir
+data/

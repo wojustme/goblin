@@ -16,15 +16,6 @@ SqlCreate SqlCreateTable(Span s, boolean replace): {
     }
 }
 
-boolean IfNotExistsOpt() :
-{
-}
-{
-    <IF> <NOT> <EXISTS> { return true;}
-    |
-    {return false;}
-}
-
 void TableElementList(List<SqlNode> columnList) :
 {
     final Span s;

@@ -16,6 +16,6 @@ public class ErrorResponsePacket extends MysqlPacket {
 
   public static ErrorResponsePacket createOf(int sequenceId, int errorNumber, String message) {
     return new ErrorResponsePacket(
-        sequenceId, errorNumber, "".getBytes(StandardCharsets.UTF_8), message);
+        sequenceId, errorNumber, "HY000".getBytes(StandardCharsets.UTF_8), message);
   }
 }

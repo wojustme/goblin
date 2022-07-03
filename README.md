@@ -34,6 +34,6 @@ cd ${project-path}
 
 * You run a Java's application in the development integration environment, such as: IDEA.
 ```java
-com.wojustme.goblin.server.GoblinServer.main
+com.wojustme.goblin.server.GoblinStartup.main
 ```
 

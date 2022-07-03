@@ -1,28 +1,38 @@
 package com.wojustme.goblin.server.mysql.handler;
 
+import com.wojustme.goblin.common.GoblinContext;
 import com.wojustme.goblin.common.UserSession;
-import com.wojustme.goblin.meta.catalog.impl.CatalogServiceImpl;
-import com.wojustme.goblin.meta.catalog.impl.InMemoryCatalogService;
-import com.wojustme.goblin.server.SessionHandler;
+import com.wojustme.goblin.meta.catalog.model.DataType;
+import com.wojustme.goblin.server.handler.SessionHandler;
+import com.wojustme.goblin.server.handler.result.DDLResult;
+import com.wojustme.goblin.server.handler.result.FailedResult;
+import com.wojustme.goblin.server.handler.result.HandlerResult;
+import com.wojustme.goblin.server.handler.result.SucceedResult;
 import com.wojustme.goblin.server.mysql.common.ProtocolConstants;
 import com.wojustme.goblin.server.mysql.decoder.AbstractPacketDecoder;
 import com.wojustme.goblin.server.mysql.decoder.CommandPacketDecoder;
+import com.wojustme.goblin.server.mysql.packet.ColumnCountPacket;
+import com.wojustme.goblin.server.mysql.packet.ColumnDefinitionPacket;
+import com.wojustme.goblin.server.mysql.packet.EofResponsePacket;
+import com.wojustme.goblin.server.mysql.packet.ErrorResponsePacket;
 import com.wojustme.goblin.server.mysql.packet.HandshakePacket;
 import com.wojustme.goblin.server.mysql.packet.HandshakeResponsePacket;
 import com.wojustme.goblin.server.mysql.packet.OkResponsePacket;
+import com.wojustme.goblin.server.mysql.packet.ResultSetRowPacket;
 import com.wojustme.goblin.server.mysql.packet.command.QueryCommandPacket;
 import com.wojustme.goblin.server.mysql.protocol.CapabilityFlags;
 import com.wojustme.goblin.server.mysql.protocol.CharacterSet;
 import com.wojustme.goblin.server.mysql.protocol.ColumnType;
 import com.wojustme.goblin.server.mysql.protocol.ServerStatusFlags;
-import com.wojustme.goblin.server.mysql.result.MysqlResult;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,14 +44,16 @@ public class MyServerHandler extends ChannelInboundHandlerAdapter {
   private static final Logger LOGGER = LoggerFactory.getLogger(MyServerHandler.class);
   private final byte[] salt = new byte[21];
 
+  private final GoblinContext goblinContext;
   private final Map<String, SessionHandler> sessionHandlers;
 
-  public MyServerHandler(Map<String, SessionHandler> sessionHandlers) {
+  public MyServerHandler(GoblinContext goblinContext, Map<String, SessionHandler> sessionHandlers) {
     for (int i = 0; i < salt.length - 1; i++) {
       salt[i] = 1;
     }
     new Random().nextBytes(salt);
     salt[20] = 0;
+    this.goblinContext = goblinContext;
     this.sessionHandlers = sessionHandlers;
   }
 
@@ -94,7 +106,7 @@ public class MyServerHandler extends ChannelInboundHandlerAdapter {
     if (StringUtils.isNotEmpty(response.database)) {
       userSession.setDatabase(response.database);
     }
-    final SessionHandler handler = new SessionHandler(userSession, new InMemoryCatalogService("default"));
+    final SessionHandler handler = new SessionHandler(goblinContext, userSession);
     sessionHandlers.put(sessionId, handler);
 
     // remove auth connect decoder
@@ -108,14 +120,64 @@ public class MyServerHandler extends ChannelInboundHandlerAdapter {
   }
 
   private void handleQuery(ChannelHandlerContext ctx, QueryCommandPacket command) {
-    LOGGER.info("ChannelId:{} receive query:{} .", ctx.channel().id(), command.query);
+    LOGGER.info("ChannelId:{} receive query: {}", ctx.channel().id(), command.query);
 
     final String sessionId = getSessionId(ctx);
     final SessionHandler handler = sessionHandlers.get(sessionId);
-    handler.exec(ctx, command.sequenceId, command.query);
-//    final MysqlResult result = MysqlResult.create();
-//    result.addField("Goblin", ColumnType.MYSQL_TYPE_STRING);
-//    result.createRow().putString("Hello").finish();
-//    result.flush(ctx, command.sequenceId);
+    final HandlerResult result = handler.exec(command.query);
+    switch (result) {
+      case SucceedResult succeedResult -> okFlush(ctx, command.sequenceId, succeedResult);
+      case DDLResult ddlResult -> ddlFlush(ctx, command.sequenceId, ddlResult);
+      case FailedResult failedResult -> errorFlush(ctx, command.sequenceId, failedResult);
+      default -> throw new RuntimeException("Not support result type: " + result.getClass());
+    }
+  }
+
+  private void okFlush(ChannelHandlerContext ctx, int sequenceId, SucceedResult result) {
+
+    // write field's count.
+    ctx.write(new ColumnCountPacket(++sequenceId, result.getFieldCount()));
+
+    // write field.
+    for (Pair<String, DataType> fieldPair : result.getFields()) {
+      ctx.write(ColumnDefinitionPacket.builder()
+              .sequenceId(++sequenceId)
+              .name(fieldPair.getLeft())
+              .orgName(fieldPair.getLeft())
+              .columnType(goblinTypeToMysqlType(fieldPair.getRight()))
+              .build());
+    }
+
+    ctx.write(new EofResponsePacket(++sequenceId, 0));
+
+    // write row data's list.
+    for (List<Object> rowData : result.getRows()) {
+      ctx.write(new ResultSetRowPacket(++sequenceId, rowData.stream().map(Object::toString).toList()));
+    }
+
+    ctx.writeAndFlush(new EofResponsePacket(++sequenceId, 0));
+  }
+
+
+  private void ddlFlush(ChannelHandlerContext ctx, int sequenceId, DDLResult ddlResult) {
+    ctx.writeAndFlush(
+            OkResponsePacket.builder()
+                    .addStatusFlags(ServerStatusFlags.SERVER_STATUS_AUTOCOMMIT)
+                    .sequenceId(++sequenceId)
+                    .affectedRows(ddlResult.getAffect())
+                    .build());
+  }
+
+
+  private void errorFlush(ChannelHandlerContext ctx, int sequenceId, FailedResult result) {
+    final ErrorResponsePacket errorPacket = ErrorResponsePacket.createOf(++sequenceId, result.getErrorCode(), result.getMessage());
+    ctx.writeAndFlush(errorPacket);
+  }
+
+  private ColumnType goblinTypeToMysqlType(DataType goblinType) {
+   return switch (goblinType) {
+      case STRING -> ColumnType.MYSQL_TYPE_STRING;
+      default -> throw new RuntimeException("Goblin's type convert to mysql's type fail, type: " + goblinType);
+    };
   }
 }

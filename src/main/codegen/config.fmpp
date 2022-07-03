@@ -34,6 +34,8 @@ data: {
       keywords: [
         "IF"
         "COMMENT"
+        "DATABASES"
+        "TABLES"
       ]
 
       # List of keywords from "keywords" section that are not reserved.
@@ -381,6 +383,7 @@ data: {
       # Return type of method implementation should be 'SqlNode'.
       # Example: "SqlShowDatabases()", "SqlShowTables()".
       statementParserMethods: [
+        "SqlShowStat()"
       ]
 
       # List of methods for parsing custom literals.
@@ -412,6 +415,7 @@ data: {
       # Example: "SqlCreateForeignSchema".
       createStatementParserMethods: [
         "SqlCreateTable"
+        "SqlCreateDatabase"
       ]
 
       # List of methods for parsing extensions to "DROP" calls.
@@ -436,7 +440,10 @@ data: {
       # "dataTypeParserMethods".
       # Example: "parserImpls.ftl".
       implementationFiles: [
+        "Common.ftl"
         "CreateTable.ftl"
+        "CreateDatabase.ftl"
+        "Show.ftl"
       ]
 
       includePosixOperators: false

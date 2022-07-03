@@ -1,13 +1,21 @@
 package com.wojustme.goblin.sql.parser.ddl;
 
-import com.wojustme.goblin.sql.parser.ddl.SqlColumn;
-import com.wojustme.goblin.sql.parser.ddl.SqlCreateTable;
 import org.apache.calcite.sql.SqlDataTypeSpec;
 import org.apache.calcite.sql.SqlIdentifier;
 import org.apache.calcite.sql.SqlNodeList;
 import org.apache.calcite.sql.parser.SqlParserPos;
 
 public class SqlDdlNodes {
+
+  /** Parser's Model for {@link SqlCreateDatabase} */
+  public static SqlCreateDatabase createDatabase(
+      SqlParserPos pos,
+      boolean replace,
+      boolean ifNotExists,
+      SqlIdentifier dbIdentifier,
+      String comment) {
+    return new SqlCreateDatabase(pos, replace, ifNotExists, dbIdentifier, comment);
+  }
 
   /** Parser's Model for {@link SqlCreateTable} */
   public static SqlCreateTable createTable(

@@ -19,6 +19,7 @@ import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.SqlSpecialOperator;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.util.ImmutableNullableList;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
@@ -36,7 +37,7 @@ public class SqlCreateTable extends SqlCreate implements GoblinSqlDdl {
               SqlUtils.extractLiteral(operands[1], boolean.class),
               (SqlIdentifier) operands[2],
               (SqlNodeList) operands[3],
-              operands[4] == null ? null : SqlUtils.extractLiteral(operands[6], String.class));
+              operands[4] == null ? null : SqlUtils.extractLiteral(operands[4], String.class));
         }
       };
 
@@ -80,6 +81,8 @@ public class SqlCreateTable extends SqlCreate implements GoblinSqlDdl {
     if (identifierNameSize == 2) {
       dbName = names.get(0);
     }
+    Preconditions.checkArgument(
+        StringUtils.isNotEmpty(dbName), "Please make sure table of database.");
     final String tableName = names.get(identifierNameSize - 1);
 
     final List<CatalogColumn> catalogColumns =

@@ -10,7 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-public class InMemoryCatalogService implements CatalogService {
+public abstract class InMemoryCatalogService implements CatalogService {
 
   private final String defaultDb;
 
@@ -21,7 +21,7 @@ public class InMemoryCatalogService implements CatalogService {
   }
 
   @Override
-  public void updateDb(String defaultDb) {
+  public void currentDb(String defaultDb) {
     throw new NotSupportException(
         "Not support method of `updateDb` for " + this.getClass().getName());
   }

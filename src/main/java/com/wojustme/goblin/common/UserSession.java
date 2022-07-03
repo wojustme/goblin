@@ -1,12 +1,15 @@
 package com.wojustme.goblin.common;
 
 public class UserSession {
-    public UserSession(String sessionId, String username) {
 
-    }
+  public final String sessionId;
 
-    public void setDatabase(String database) {
+  private final String username;
 
+  public UserSession(String sessionId, String username) {
+    this.sessionId = sessionId;
+    this.username = username;
+  }
 
-    }
+  public void setDatabase(String database) {}
 }

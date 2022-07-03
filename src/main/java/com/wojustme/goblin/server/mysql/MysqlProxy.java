@@ -1,7 +1,7 @@
 package com.wojustme.goblin.server.mysql;
 
-import com.wojustme.goblin.common.UserSession;
-import com.wojustme.goblin.server.SessionHandler;
+import com.wojustme.goblin.common.GoblinContext;
+import com.wojustme.goblin.server.handler.SessionHandler;
 import com.wojustme.goblin.server.mysql.decoder.ClientConnectionPacketDecoder;
 import com.wojustme.goblin.server.mysql.decoder.CommandPacketDecoder;
 import com.wojustme.goblin.server.mysql.encoder.ServerPacketEncoder;
@@ -22,9 +22,10 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MysqlProxyServer implements AutoCloseable {
+public class MysqlProxy implements AutoCloseable {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MysqlProxyServer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MysqlProxy.class);
+
   private final int port;
 
   private Channel channel;
@@ -33,11 +34,11 @@ public class MysqlProxyServer implements AutoCloseable {
 
   private final Map<String, SessionHandler> sessionHandlers = new ConcurrentHashMap<>();
 
-  public MysqlProxyServer(int port) {
+  public MysqlProxy(int port) {
     this.port = port;
   }
 
-  public void start() {
+  public void start(GoblinContext goblinContext) {
     final int workerTheadNum = Runtime.getRuntime().availableProcessors() * 2;
     bossGroup = new NioEventLoopGroup();
     workerGroup = new NioEventLoopGroup(workerTheadNum);
@@ -55,7 +56,7 @@ public class MysqlProxyServer implements AutoCloseable {
                     pipeline.addLast(new ServerPacketEncoder());
                     pipeline.addLast(new ClientConnectionPacketDecoder());
                     pipeline.addLast(new CommandPacketDecoder());
-                    pipeline.addLast(new MyServerHandler(sessionHandlers));
+                    pipeline.addLast(new MyServerHandler(goblinContext, sessionHandlers));
                   }
                 })
             .bind(port)
