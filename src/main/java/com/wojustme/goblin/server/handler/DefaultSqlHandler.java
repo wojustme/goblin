@@ -8,6 +8,7 @@ import com.wojustme.goblin.sql.ex.SqlRuntimeException;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * This handler for query statement, <br>
@@ -21,6 +22,13 @@ public class DefaultSqlHandler extends AbstractSqlHandler {
 
   @Override
   HandlerResult exec(SqlPlanner sqlPlanner) {
+    if (parsedNode.toString().contains("DATABASE")) {
+      final SucceedResult succeedResult = new SucceedResult();
+      succeedResult.addField("DATABASE()", DataType.STRING);
+      final String currentDb = sqlPlanner.getCatalogService().defaultDb();
+      succeedResult.addRow(StringUtils.isEmpty(currentDb) ? null : currentDb);
+      return succeedResult;
+    }
     final SqlNode validatedNode = sqlPlanner.validate(parsedNode);
     final RelNode rel = sqlPlanner.convertRel(validatedNode);
     if (rel.explain().contains("@@")) {

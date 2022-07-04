@@ -11,7 +11,7 @@ public interface CatalogService {
   /** Whether setting database */
   boolean isSettingDatabase();
   /** set default database's name */
-  void currentDb(String defaultDb);
+  void setDefaultDb(String defaultDb);
 
   /** Get default database's name */
   String defaultDb();

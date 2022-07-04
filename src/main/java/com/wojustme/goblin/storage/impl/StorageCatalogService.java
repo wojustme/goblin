@@ -34,7 +34,7 @@ public class StorageCatalogService implements CatalogService {
   }
 
   @Override
-  public void currentDb(String defaultDb) {
+  public void setDefaultDb(String defaultDb) {
     this.settingDatabase = true;
     this.defaultDb = defaultDb;
   }

@@ -1,7 +1,8 @@
 package com.wojustme.goblin.server.mysql.decoder;
 
-import com.wojustme.goblin.server.mysql.packet.command.CommandPacket;
+import com.wojustme.goblin.server.mysql.packet.command.QuitCommandPacket;
 import com.wojustme.goblin.server.mysql.packet.command.QueryCommandPacket;
+import com.wojustme.goblin.server.mysql.packet.command.UseDbCommandPacket;
 import com.wojustme.goblin.server.mysql.protocol.CharacterSet;
 import com.wojustme.goblin.server.mysql.protocol.Command;
 import io.netty.buffer.ByteBuf;
@@ -26,8 +27,14 @@ public class CommandPacketDecoder extends AbstractPacketDecoder {
       case COM_QUERY:
         out.add(new QueryCommandPacket(sequenceId, readFixedLengthString(packet, packet.readableBytes(), clientCharset.charset)));
         break;
+      case COM_INIT_DB:
+        out.add(new UseDbCommandPacket(sequenceId, readFixedLengthString(packet, packet.readableBytes(), clientCharset.charset)));
+        break;
+      case COM_QUIT:
+        out.add(new QuitCommandPacket(sequenceId, readFixedLengthString(packet, packet.readableBytes(), clientCharset.charset)));
+        break;
       default:
-        out.add(new CommandPacket(sequenceId, command.get()));
+        throw new RuntimeException("Not support command: " + command.get());
     }
   }
 }

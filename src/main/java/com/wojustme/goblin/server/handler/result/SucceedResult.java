@@ -1,7 +1,6 @@
 package com.wojustme.goblin.server.handler.result;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.wojustme.goblin.meta.catalog.model.DataType;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -34,8 +33,16 @@ public class SucceedResult extends HandlerResult {
   }
 
   public SucceedResult addRow(Object... row) {
-    Preconditions.checkArgument(row.length == getFieldCount(), "Illegal row data.");
-    rows.add(ImmutableList.copyOf(row));
+    final ArrayList<Object> rowData = new ArrayList<>();
+    if (row == null) {
+      rowData.add(null);
+    } else {
+      for (Object o : row) {
+        rowData.add(o);
+      }
+    }
+    Preconditions.checkArgument(rowData.size() == getFieldCount(), "Illegal row data.");
+    rows.add(rowData);
     return this;
   }
 }

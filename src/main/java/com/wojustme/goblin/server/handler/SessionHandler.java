@@ -14,7 +14,6 @@ import com.wojustme.goblin.storage.impl.StorageCatalogService;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlNodeList;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,28 +25,28 @@ public class SessionHandler {
   public final GoblinContext goblinContext;
   public final UserSession userSession;
 
-  private SqlPlanner sqlPlanner;
+  public final CatalogService catalogService;
 
   public SessionHandler(GoblinContext goblinContext, UserSession userSession) {
     this.goblinContext = goblinContext;
     this.userSession = userSession;
-    final CatalogService catalogService = new StorageCatalogService(StringUtils.EMPTY, goblinContext.storageManager);
-    final SqlPlannerConf sqlPlannerConf = new SqlPlannerConf(catalogService);
-    this.sqlPlanner = new SqlPlanner(userSession, sqlPlannerConf);
+    this.catalogService = new StorageCatalogService(StringUtils.EMPTY, goblinContext.storageManager);
   }
 
   public HandlerResult exec(String query) {
+    final SqlPlannerConf sqlPlannerConf = new SqlPlannerConf(catalogService);
+    final SqlPlanner sqlPlanner = new SqlPlanner(userSession, sqlPlannerConf);
     try {
       final SqlNode parsed = sqlPlanner.parse(query);
       Preconditions.checkArgument(parsed != null  && !(parsed instanceof SqlNodeList ), "Goblin only support single statement");
-      return execEachNode(parsed);
+      return execEachNode(sqlPlanner, parsed);
     } catch (Throwable t) {
       LOGGER.error("Session:{} exec sql fail, cause by:", userSession.sessionId, t);
       return new FailedResult(404, t.getMessage());
     }
   }
 
-  public HandlerResult execEachNode( SqlNode sqlNode) {
+  public HandlerResult execEachNode(SqlPlanner sqlPlanner, SqlNode sqlNode) {
     AbstractSqlHandler sqlHandler = switch (sqlNode) {
       case GoblinSqlDdl ddlNode -> new DDLSqlHandler(sqlNode);
       case GoblinSqlShow showNode -> new ShowSqlHandler(sqlNode);

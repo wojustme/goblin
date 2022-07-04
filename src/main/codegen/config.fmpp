@@ -36,6 +36,7 @@ data: {
         "COMMENT"
         "DATABASES"
         "TABLES"
+        "USE"
       ]
 
       # List of keywords from "keywords" section that are not reserved.
@@ -384,6 +385,7 @@ data: {
       # Example: "SqlShowDatabases()", "SqlShowTables()".
       statementParserMethods: [
         "SqlShowStat()"
+        "SqlUseDatabase()"
       ]
 
       # List of methods for parsing custom literals.
@@ -444,6 +446,7 @@ data: {
         "CreateTable.ftl"
         "CreateDatabase.ftl"
         "Show.ftl"
+        "UseDatabase.ftl"
       ]
 
       includePosixOperators: false

@@ -1,6 +1,7 @@
 package com.wojustme.goblin.server.handler;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.wojustme.goblin.meta.catalog.model.DataType;
 import com.wojustme.goblin.server.handler.result.DDLResult;
 import com.wojustme.goblin.server.handler.result.HandlerResult;

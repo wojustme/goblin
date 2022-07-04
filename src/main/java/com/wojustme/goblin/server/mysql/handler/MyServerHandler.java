@@ -19,7 +19,10 @@ import com.wojustme.goblin.server.mysql.packet.HandshakePacket;
 import com.wojustme.goblin.server.mysql.packet.HandshakeResponsePacket;
 import com.wojustme.goblin.server.mysql.packet.OkResponsePacket;
 import com.wojustme.goblin.server.mysql.packet.ResultSetRowPacket;
+import com.wojustme.goblin.server.mysql.packet.command.CommandPacket;
 import com.wojustme.goblin.server.mysql.packet.command.QueryCommandPacket;
+import com.wojustme.goblin.server.mysql.packet.command.QuitCommandPacket;
+import com.wojustme.goblin.server.mysql.packet.command.UseDbCommandPacket;
 import com.wojustme.goblin.server.mysql.protocol.CapabilityFlags;
 import com.wojustme.goblin.server.mysql.protocol.CharacterSet;
 import com.wojustme.goblin.server.mysql.protocol.ColumnType;
@@ -84,13 +87,15 @@ public class MyServerHandler extends ChannelInboundHandlerAdapter {
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     switch (msg) {
       case HandshakeResponsePacket packet -> handleHandshakeResponse(ctx, packet);
-      case QueryCommandPacket packet -> handleQuery(ctx,packet);
+      case CommandPacket packet -> handleCommand(ctx, packet);
+//      case UseDbCommandPacket packet -> handleUseDb(ctx, packet);
       default -> {
         LOGGER.error("Unknown packet type: {}", msg.getClass());
         throw new IllegalStateException("Unknown packet type: " + msg.getClass());
       }
     }
   }
+
 
   private String getSessionId(ChannelHandlerContext ctx) {
     return ctx.channel().id().asLongText();
@@ -119,17 +124,26 @@ public class MyServerHandler extends ChannelInboundHandlerAdapter {
             .build());
   }
 
-  private void handleQuery(ChannelHandlerContext ctx, QueryCommandPacket command) {
-    LOGGER.info("ChannelId:{} receive query: {}", ctx.channel().id(), command.query);
 
+  private void handleCommand(ChannelHandlerContext ctx, CommandPacket command) {
     final String sessionId = getSessionId(ctx);
-    final SessionHandler handler = sessionHandlers.get(sessionId);
-    final HandlerResult result = handler.exec(command.query);
-    switch (result) {
-      case SucceedResult succeedResult -> okFlush(ctx, command.sequenceId, succeedResult);
-      case DDLResult ddlResult -> ddlFlush(ctx, command.sequenceId, ddlResult);
-      case FailedResult failedResult -> errorFlush(ctx, command.sequenceId, failedResult);
-      default -> throw new RuntimeException("Not support result type: " + result.getClass());
+    LOGGER.info("SessionId:{} receive sql: {}", sessionId, command);
+    final SessionHandler sessionHandler = sessionHandlers.get(sessionId);
+    if (command instanceof QuitCommandPacket quit) {
+      sessionHandlers.remove(sessionId);
+      int sequenceId = quit.sequenceId;
+      ctx.writeAndFlush(OkResponsePacket.builder()
+              .addStatusFlags(ServerStatusFlags.SERVER_SESSION_STATE_CHANGED)
+              .sequenceId(++sequenceId)
+              .build());
+    } else {
+      final HandlerResult result = command.handle(sessionHandler);
+      switch (result) {
+        case SucceedResult succeedResult -> okFlush(ctx, command.sequenceId, succeedResult);
+        case DDLResult ddlResult -> ddlFlush(ctx, command.sequenceId, ddlResult);
+        case FailedResult failedResult -> errorFlush(ctx, command.sequenceId, failedResult);
+        default -> throw new RuntimeException("Not support result type: " + result.getClass());
+      }
     }
   }
 
@@ -152,7 +166,13 @@ public class MyServerHandler extends ChannelInboundHandlerAdapter {
 
     // write row data's list.
     for (List<Object> rowData : result.getRows()) {
-      ctx.write(new ResultSetRowPacket(++sequenceId, rowData.stream().map(Object::toString).toList()));
+      ctx.write(new ResultSetRowPacket(++sequenceId, rowData.stream().map(col->{
+        if (col == null) {
+          return "NULL";
+        } else {
+          return col.toString();
+        }
+      }).toList()));
     }
 
     ctx.writeAndFlush(new EofResponsePacket(++sequenceId, 0));

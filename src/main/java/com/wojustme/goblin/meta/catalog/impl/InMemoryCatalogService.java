@@ -21,7 +21,7 @@ public abstract class InMemoryCatalogService implements CatalogService {
   }
 
   @Override
-  public void currentDb(String defaultDb) {
+  public void setDefaultDb(String defaultDb) {
     throw new NotSupportException(
         "Not support method of `updateDb` for " + this.getClass().getName());
   }
