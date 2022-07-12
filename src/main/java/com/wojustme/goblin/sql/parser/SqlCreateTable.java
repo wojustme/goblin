@@ -1,8 +1,7 @@
-package com.wojustme.goblin.sql.parser.ddl;
+package com.wojustme.goblin.sql.parser;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.wojustme.goblin.meta.catalog.CatalogService;
 import com.wojustme.goblin.meta.catalog.model.CatalogColumn;
 import com.wojustme.goblin.meta.catalog.model.CatalogTable;

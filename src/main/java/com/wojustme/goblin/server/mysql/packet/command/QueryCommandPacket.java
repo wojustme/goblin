@@ -15,7 +15,7 @@ public class QueryCommandPacket extends CommandPacket {
   }
 
   @Override
-  public HandlerResult handle(SessionHandler sessionHandler) {
+  protected HandlerResult exec(SessionHandler sessionHandler) {
     return sessionHandler.exec(query);
   }
 

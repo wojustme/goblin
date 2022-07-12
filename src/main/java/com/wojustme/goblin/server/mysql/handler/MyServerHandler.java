@@ -20,9 +20,7 @@ import com.wojustme.goblin.server.mysql.packet.HandshakeResponsePacket;
 import com.wojustme.goblin.server.mysql.packet.OkResponsePacket;
 import com.wojustme.goblin.server.mysql.packet.ResultSetRowPacket;
 import com.wojustme.goblin.server.mysql.packet.command.CommandPacket;
-import com.wojustme.goblin.server.mysql.packet.command.QueryCommandPacket;
 import com.wojustme.goblin.server.mysql.packet.command.QuitCommandPacket;
-import com.wojustme.goblin.server.mysql.packet.command.UseDbCommandPacket;
 import com.wojustme.goblin.server.mysql.protocol.CapabilityFlags;
 import com.wojustme.goblin.server.mysql.protocol.CharacterSet;
 import com.wojustme.goblin.server.mysql.protocol.ColumnType;
@@ -98,7 +96,7 @@ public class MyServerHandler extends ChannelInboundHandlerAdapter {
 
 
   private String getSessionId(ChannelHandlerContext ctx) {
-    return ctx.channel().id().asLongText();
+    return ctx.channel().id().asShortText();
   }
 
   private void handleHandshakeResponse(
@@ -137,7 +135,7 @@ public class MyServerHandler extends ChannelInboundHandlerAdapter {
               .sequenceId(++sequenceId)
               .build());
     } else {
-      final HandlerResult result = command.handle(sessionHandler);
+      HandlerResult result = command.handle(sessionHandler);
       switch (result) {
         case SucceedResult succeedResult -> okFlush(ctx, command.sequenceId, succeedResult);
         case DDLResult ddlResult -> ddlFlush(ctx, command.sequenceId, ddlResult);

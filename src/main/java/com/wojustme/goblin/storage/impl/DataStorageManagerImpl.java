@@ -63,7 +63,7 @@ public class DataStorageManagerImpl implements DataStorageManager {
   }
 
   private File buildFileByPath(String... names) {
-    final String realPath = rootDirPath + String.join(File.separator, names);
+    final String realPath = String.join(File.separator, names);
     return org.apache.commons.io.FileUtils.getFile(rootDir, realPath);
   }
 
@@ -73,5 +73,10 @@ public class DataStorageManagerImpl implements DataStorageManager {
   @Override
   public List<DataBlock> readData(String... cols) {
     return null;
+  }
+
+  @Override
+  public void writeDataBatch() {
+
   }
 }

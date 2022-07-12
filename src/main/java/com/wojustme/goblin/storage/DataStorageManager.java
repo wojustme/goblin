@@ -37,4 +37,7 @@ public interface DataStorageManager {
   void writeData(List<DataBlock> blocks);
 
   List<DataBlock> readData(String... cols);
+
+    void writeDataBatch();
+
 }

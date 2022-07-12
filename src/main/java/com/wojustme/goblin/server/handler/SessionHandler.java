@@ -8,8 +8,8 @@ import com.wojustme.goblin.server.handler.result.FailedResult;
 import com.wojustme.goblin.server.handler.result.HandlerResult;
 import com.wojustme.goblin.sql.SqlPlanner;
 import com.wojustme.goblin.sql.SqlPlannerConf;
-import com.wojustme.goblin.sql.parser.ddl.GoblinSqlDdl;
-import com.wojustme.goblin.sql.parser.ddl.GoblinSqlShow;
+import com.wojustme.goblin.sql.parser.GoblinSqlDdl;
+import com.wojustme.goblin.sql.parser.GoblinSqlShow;
 import com.wojustme.goblin.storage.impl.StorageCatalogService;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlNodeList;
@@ -22,15 +22,15 @@ public class SessionHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SessionHandler.class);
 
-  public final GoblinContext goblinContext;
+  public final GoblinContext context;
   public final UserSession userSession;
 
   public final CatalogService catalogService;
 
-  public SessionHandler(GoblinContext goblinContext, UserSession userSession) {
-    this.goblinContext = goblinContext;
+  public SessionHandler(GoblinContext context, UserSession userSession) {
+    this.context = context;
     this.userSession = userSession;
-    this.catalogService = new StorageCatalogService(StringUtils.EMPTY, goblinContext.storageManager);
+    this.catalogService = new StorageCatalogService(StringUtils.EMPTY, context.storageManager);
   }
 
   public HandlerResult exec(String query) {
@@ -46,12 +46,12 @@ public class SessionHandler {
     }
   }
 
-  public HandlerResult execEachNode(SqlPlanner sqlPlanner, SqlNode sqlNode) {
-    AbstractSqlHandler sqlHandler = switch (sqlNode) {
-      case GoblinSqlDdl ddlNode -> new DDLSqlHandler(sqlNode);
-      case GoblinSqlShow showNode -> new ShowSqlHandler(sqlNode);
-      default -> new DefaultSqlHandler(sqlNode);
+  public HandlerResult execEachNode(SqlPlanner sqlPlanner, SqlNode parsedNode) {
+    AbstractSqlHandler sqlHandler = switch (parsedNode) {
+      case GoblinSqlDdl ddlNode -> new DDLSqlHandler(context, sqlPlanner);
+      case GoblinSqlShow showNode -> new ShowSqlHandler(context, sqlPlanner);
+      default -> new DefaultSqlHandler(context, sqlPlanner);
     };
-    return sqlHandler.exec(sqlPlanner);
+    return sqlHandler.exec(parsedNode);
   }
 }

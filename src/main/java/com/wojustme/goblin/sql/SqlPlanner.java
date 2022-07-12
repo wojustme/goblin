@@ -2,6 +2,7 @@ package com.wojustme.goblin.sql;
 
 import com.wojustme.goblin.common.UserSession;
 import com.wojustme.goblin.meta.catalog.CatalogService;
+import com.wojustme.goblin.sql.opt.SqlOptFlow;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptTable;
@@ -72,8 +73,9 @@ public class SqlPlanner {
     return sqlToRelConverter.convertQuery(validatedNode, false, true);
   }
 
-  public RelNode optimize(RelNode relNode, List<RelOptRule> rules) {
-    return null;
+  public RelNode optimize(RelNode relNode) {
+    final SqlOptFlow optFlow = new SqlOptFlow();
+    return optFlow.run(relNode);
   }
 
   // Some private util-methods

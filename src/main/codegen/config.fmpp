@@ -26,7 +26,7 @@ data: {
       # Example: "org.apache.calcite.sql.*", "java.util.List".
       imports: [
         "org.apache.calcite.sql.SqlCreate"
-        "com.wojustme.goblin.sql.parser.ddl.*"
+        "com.wojustme.goblin.sql.parser.*"
       ]
 
       # List of new keywords. Example: "DATABASES", "TABLES". If the keyword is

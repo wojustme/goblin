@@ -1,4 +1,4 @@
-package com.wojustme.goblin.sql.parser.ddl;
+package com.wojustme.goblin.sql.parser;
 
 import org.apache.calcite.sql.SqlDataTypeSpec;
 import org.apache.calcite.sql.SqlIdentifier;

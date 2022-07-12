@@ -1,10 +1,8 @@
-package com.wojustme.goblin.sql.parser.ddl;
+package com.wojustme.goblin.sql.parser;
 
 import com.wojustme.goblin.meta.catalog.CatalogService;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 public interface GoblinSqlShow {
 

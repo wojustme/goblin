@@ -1,6 +1,5 @@
 package com.wojustme.goblin.server.mysql.packet.command;
 
-import com.google.common.base.Preconditions;
 import com.wojustme.goblin.server.handler.SessionHandler;
 import com.wojustme.goblin.server.handler.result.DDLResult;
 import com.wojustme.goblin.server.handler.result.HandlerResult;
@@ -8,28 +7,24 @@ import com.wojustme.goblin.server.mysql.protocol.Command;
 
 import java.util.StringJoiner;
 
-public class UseDbCommandPacket extends CommandPacket {
+public class FieldListCommandPacket extends CommandPacket {
   public final String database;
 
-  public UseDbCommandPacket(int sequenceId, String database) {
-    super(sequenceId, Command.COM_INIT_DB);
+  public FieldListCommandPacket(int sequenceId, String database) {
+    super(sequenceId, Command.COM_FIELD_LIST);
     this.database = database;
   }
 
   @Override
   protected HandlerResult exec(SessionHandler sessionHandler) {
-    Preconditions.checkArgument(
-        sessionHandler.catalogService.listDatabases().contains(database),
-        "Database: %s not exist.",
-        database);
-    sessionHandler.catalogService.setDefaultDb(database);
-    sessionHandler.userSession.setDatabase(database);
+//    sessionHandler.catalogService.setDefaultDb(database);
+//    sessionHandler.userSession.setDatabase(database);
     return new DDLResult(1);
   }
 
   @Override
   protected String genStr() {
-    return new StringJoiner(", ", UseDbCommandPacket.class.getSimpleName() + "[", "]")
+    return new StringJoiner(", ", FieldListCommandPacket.class.getSimpleName() + "[", "]")
         .add("command=" + command)
         .add("database='" + database + "'")
         .toString();

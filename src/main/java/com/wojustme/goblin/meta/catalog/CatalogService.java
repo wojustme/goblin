@@ -3,6 +3,7 @@ package com.wojustme.goblin.meta.catalog;
 import com.wojustme.goblin.meta.catalog.model.CatalogDatabase;
 import com.wojustme.goblin.meta.catalog.model.CatalogTable;
 
+import java.util.List;
 import java.util.Set;
 
 /** Catalog service */
@@ -28,6 +29,9 @@ public interface CatalogService {
 
   /** Get a table by db-name and table-name. It returns null, if not found. */
   CatalogTable getTable(String dbName, String tableName);
+
+  /** Analyze and get table with default-db. */
+  CatalogTable analyzeWithDefaultDB(List<String> names);
 
   /** List all table's names in target database */
   Set<String> listTables(String defaultDb);

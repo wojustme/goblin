@@ -79,11 +79,12 @@ public class SqlPlannerConf {
           new MetaIntegrates.MySchemaWrapper(null, rootSchema, "");
 
       // define default schema
+      final String defaultSchemaName = catalogService.defaultDb();
       final MetaIntegrates.MySchema defaultSchema =
-          new MetaIntegrates.MySchema(catalogService, typeFactory, catalogService.defaultDb());
+          new MetaIntegrates.MySchema(catalogService, typeFactory, defaultSchemaName);
       final MetaIntegrates.MySchemaWrapper defaultSchemaWrapper =
           new MetaIntegrates.MySchemaWrapper(
-              rootSchemaWrapper, rootSchema, catalogService.defaultDb());
+              rootSchemaWrapper, defaultSchema, defaultSchemaName);
 
       return new CatalogReader(rootSchemaWrapper, defaultSchemaWrapper, typeFactory, connConfig);
     }

@@ -14,7 +14,7 @@ public class QuitCommandPacket extends CommandPacket {
   }
 
   @Override
-  public HandlerResult handle(SessionHandler sessionHandler) {
+  protected HandlerResult exec(SessionHandler sessionHandler) {
     return null;
   }
 

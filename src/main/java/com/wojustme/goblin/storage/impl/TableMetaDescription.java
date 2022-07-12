@@ -33,6 +33,10 @@ public class TableMetaDescription {
     this.catalogTable = catalogTable;
   }
 
+  public CatalogTable getCatalogTable() {
+    return catalogTable;
+  }
+
   public void writeMeta() {
     final List<String> colInfoList =
         catalogTable.columns.stream()

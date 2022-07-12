@@ -1,4 +1,4 @@
-package com.wojustme.goblin.sql.parser.ddl;
+package com.wojustme.goblin.sql.parser;
 
 import com.wojustme.goblin.meta.catalog.CatalogService;
 

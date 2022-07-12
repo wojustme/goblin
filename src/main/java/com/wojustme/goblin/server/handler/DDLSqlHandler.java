@@ -1,25 +1,27 @@
 package com.wojustme.goblin.server.handler;
 
 import com.google.common.base.Preconditions;
+import com.wojustme.goblin.common.GoblinContext;
 import com.wojustme.goblin.server.handler.result.DDLResult;
 import com.wojustme.goblin.server.handler.result.HandlerResult;
 import com.wojustme.goblin.sql.SqlPlanner;
-import com.wojustme.goblin.sql.parser.ddl.GoblinSqlDdl;
+import com.wojustme.goblin.sql.parser.GoblinSqlDdl;
+import com.wojustme.goblin.sql.parser.SqlCreateTable;
 import org.apache.calcite.sql.SqlNode;
 
 /**
  * This handler for ddl statement, <br>
- * top kinds: {@link com.wojustme.goblin.sql.parser.ddl.SqlCreateTable}
+ * top kinds: {@link SqlCreateTable}
  */
 public class DDLSqlHandler extends AbstractSqlHandler {
 
-  public DDLSqlHandler(SqlNode parsedNode) {
-    super(parsedNode);
+  public DDLSqlHandler(GoblinContext context, SqlPlanner sqlPlanner) {
+    super(context, sqlPlanner);
   }
 
   @Override
-  HandlerResult exec(SqlPlanner sqlPlanner) {
-    Preconditions.checkArgument(this.parsedNode instanceof GoblinSqlDdl);
+  HandlerResult exec(SqlNode parsedNode) {
+    Preconditions.checkArgument(parsedNode instanceof GoblinSqlDdl);
     ((GoblinSqlDdl) parsedNode).exec(sqlPlanner.getCatalogService());
     return new DDLResult(1);
   }

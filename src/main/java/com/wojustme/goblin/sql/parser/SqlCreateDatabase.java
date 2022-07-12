@@ -1,4 +1,4 @@
-package com.wojustme.goblin.sql.parser.ddl;
+package com.wojustme.goblin.sql.parser;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
