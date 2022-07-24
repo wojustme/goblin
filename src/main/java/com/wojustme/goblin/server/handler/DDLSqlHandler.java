@@ -2,7 +2,7 @@ package com.wojustme.goblin.server.handler;
 
 import com.google.common.base.Preconditions;
 import com.wojustme.goblin.common.GoblinContext;
-import com.wojustme.goblin.server.handler.result.DDLResult;
+import com.wojustme.goblin.server.handler.result.AffectSummaryResult;
 import com.wojustme.goblin.server.handler.result.HandlerResult;
 import com.wojustme.goblin.sql.SqlPlanner;
 import com.wojustme.goblin.sql.parser.GoblinSqlDdl;
@@ -23,6 +23,6 @@ public class DDLSqlHandler extends AbstractSqlHandler {
   HandlerResult exec(SqlNode parsedNode) {
     Preconditions.checkArgument(parsedNode instanceof GoblinSqlDdl);
     ((GoblinSqlDdl) parsedNode).exec(sqlPlanner.getCatalogService());
-    return new DDLResult(1);
+    return new AffectSummaryResult(1);
   }
 }

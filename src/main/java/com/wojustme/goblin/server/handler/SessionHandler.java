@@ -30,11 +30,11 @@ public class SessionHandler {
   public SessionHandler(GoblinContext context, UserSession userSession) {
     this.context = context;
     this.userSession = userSession;
-    this.catalogService = new StorageCatalogService(StringUtils.EMPTY, context.storageManager);
+    this.catalogService = new StorageCatalogService(StringUtils.EMPTY, context.storageManager());
   }
 
   public HandlerResult exec(String query) {
-    final SqlPlannerConf sqlPlannerConf = new SqlPlannerConf(catalogService);
+    final SqlPlannerConf sqlPlannerConf = new SqlPlannerConf(catalogService, context.functionRegistry());
     final SqlPlanner sqlPlanner = new SqlPlanner(userSession, sqlPlannerConf);
     try {
       final SqlNode parsed = sqlPlanner.parse(query);

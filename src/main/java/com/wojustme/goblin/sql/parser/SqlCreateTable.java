@@ -19,6 +19,7 @@ import org.apache.calcite.sql.SqlSpecialOperator;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.util.ImmutableNullableList;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
@@ -73,22 +74,15 @@ public class SqlCreateTable extends SqlCreate implements GoblinSqlDdl {
 
   @Override
   public void exec(CatalogService catalogService) {
-    final ImmutableList<String> names = tableIdentifier.names;
-    final int identifierNameSize = names.size();
-    Preconditions.checkArgument(identifierNameSize <= 2 && identifierNameSize > 0);
-    String dbName = catalogService.defaultDb();
-    if (identifierNameSize == 2) {
-      dbName = names.get(0);
-    }
-    Preconditions.checkArgument(
-        StringUtils.isNotEmpty(dbName), "Please make sure table of database.");
-    final String tableName = names.get(identifierNameSize - 1);
+
+    final Pair<String, String> tblNamespace = parseTableNamespace(catalogService, tableIdentifier);
 
     final List<CatalogColumn> catalogColumns =
         columns.stream().map(sqlNode -> ((SqlColumn) sqlNode).buildCatalogColumn()).toList();
 
     final CatalogTable catalogTable =
-        new CatalogTable(dbName, tableName, TableType.ENTITY, catalogColumns);
+        new CatalogTable(
+            tblNamespace.getLeft(), tblNamespace.getRight(), TableType.ENTITY, catalogColumns);
     catalogService.createTable(catalogTable);
   }
 }

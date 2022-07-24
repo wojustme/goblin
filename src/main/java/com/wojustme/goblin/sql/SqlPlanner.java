@@ -15,11 +15,17 @@ import org.apache.calcite.rel.metadata.DefaultRelMetadataProvider;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexExecutorImpl;
+import org.apache.calcite.sql.SqlCharStringLiteral;
+import org.apache.calcite.sql.SqlLiteral;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.sql.parser.SqlParser;
+import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.sql.util.SqlShuttle;
 import org.apache.calcite.sql2rel.SqlToRelConverter;
 import org.apache.calcite.sql2rel.StandardConvertletTable;
+import org.apache.calcite.util.NlsString;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.List;
 
@@ -58,6 +64,12 @@ public class SqlPlanner {
   public RelNode convertRel(SqlNode validatedNode) {
     final RelRoot relRoot = convertRelRoot(validatedNode);
     return relRoot.rel;
+  }
+
+  public RelNode toRel(String sql) {
+    final SqlNode parse = parse(sql);
+    final SqlNode validate = validate(parse);
+    return convertRel(validate);
   }
 
   private RelRoot convertRelRoot(SqlNode validatedNode) {

@@ -2,6 +2,7 @@ package com.wojustme.goblin.storage;
 
 import com.wojustme.goblin.meta.catalog.model.CatalogDatabase;
 import com.wojustme.goblin.meta.catalog.model.CatalogTable;
+import com.wojustme.goblin.storage.impl.TableDesc;
 
 import java.io.File;
 import java.util.List;
@@ -33,11 +34,6 @@ public interface DataStorageManager {
    */
   void createTable(CatalogTable catalogTable);
 
-  /** Write data's blocks into file. */
-  void writeData(List<DataBlock> blocks);
-
-  List<DataBlock> readData(String... cols);
-
-    void writeDataBatch();
-
+  /** Get a {@link TableIO} by {@link CatalogTable} */
+  TableIO getTableIO(CatalogTable catalogTable);
 }

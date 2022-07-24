@@ -28,6 +28,12 @@ public class SqlDdlNodes {
     return new SqlCreateTable(pos, replace, ifNotExists, tableIdentifier, columns, comment);
   }
 
+  /** Parser's Model for {@link SqlDropTable} */
+  public static SqlDropTable dropTable(
+      SqlParserPos pos, boolean ifExists, SqlIdentifier tableIdentifier) {
+    return new SqlDropTable(pos, ifExists, tableIdentifier);
+  }
+
   /** Parser's Model for {@link SqlColumn} */
   public static SqlColumn column(
       SqlParserPos pos,

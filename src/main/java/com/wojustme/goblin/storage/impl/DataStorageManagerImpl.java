@@ -1,13 +1,14 @@
 package com.wojustme.goblin.storage.impl;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.wojustme.goblin.common.FileUtils;
 import com.wojustme.goblin.meta.catalog.model.CatalogDatabase;
 import com.wojustme.goblin.meta.catalog.model.CatalogTable;
 import com.wojustme.goblin.storage.DataBlock;
 import com.wojustme.goblin.storage.DataStorageManager;
+import com.wojustme.goblin.storage.TableIO;
 import com.wojustme.goblin.storage.ex.StorageException;
+import com.wojustme.goblin.storage.io.SimpleTableIO;
 
 import java.io.File;
 import java.util.List;
@@ -57,26 +58,21 @@ public class DataStorageManagerImpl implements DataStorageManager {
     FileUtils.forceMkdir(tableDir);
 
     // Write table's schema into tbl.meta
-    final TableMetaDescription tableMetaDescription = new TableMetaDescription(tableDir);
-    tableMetaDescription.setCatalogTable(catalogTable);
-    tableMetaDescription.writeMeta();
+    final TableDesc tableDesc = new TableDesc(tableDir);
+    tableDesc.setCatalogTable(catalogTable);
+    tableDesc.writeMeta();
+  }
+
+  @Override
+  public TableIO getTableIO(CatalogTable catalogTable) {
+    final File tableDir = buildFileByPath(catalogTable.dbName, catalogTable.tableName);
+    final TableDesc tableDesc = new TableDesc(tableDir);
+    tableDesc.setCatalogTable(catalogTable);
+    return new SimpleTableIO(tableDesc);
   }
 
   private File buildFileByPath(String... names) {
     final String realPath = String.join(File.separator, names);
     return org.apache.commons.io.FileUtils.getFile(rootDir, realPath);
-  }
-
-  @Override
-  public void writeData(List<DataBlock> blocks) {}
-
-  @Override
-  public List<DataBlock> readData(String... cols) {
-    return null;
-  }
-
-  @Override
-  public void writeDataBatch() {
-
   }
 }

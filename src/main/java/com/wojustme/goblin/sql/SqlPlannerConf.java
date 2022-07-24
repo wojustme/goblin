@@ -1,7 +1,9 @@
 package com.wojustme.goblin.sql;
 
 import com.google.common.collect.Lists;
+import com.wojustme.goblin.fun.FunctionRegistry;
 import com.wojustme.goblin.meta.catalog.CatalogService;
+import com.wojustme.goblin.sql.op.GoblinOperatorTable;
 import com.wojustme.goblin.sql.schema.MetaIntegrates;
 import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
@@ -43,14 +45,21 @@ public class SqlPlannerConf {
 
   public final SqlValidator validator;
 
-  public SqlPlannerConf(CatalogService catalogService) {
+  public SqlPlannerConf(CatalogService catalogService, FunctionRegistry functionRegistry) {
     this.dialect = MysqlSqlDialect.DEFAULT;
     this.parserConfig = dialect.configureParser(SqlParser.Config.DEFAULT);
     this.typeFactory = new JavaTypeFactoryImpl(dialect.getTypeSystem());
     this.catalogService = catalogService;
-    CalciteConnectionConfigImpl connConfig = new CalciteConnectionConfigImpl(new Properties());
+    final CalciteConnectionConfigImpl connConfig =
+        new CalciteConnectionConfigImpl(new Properties());
     this.catalogReader = CatalogReader.getCatalogReader(catalogService, typeFactory, connConfig);
-    this.operatorTable = SqlOperatorTables.chain();
+    if (functionRegistry != null) {
+      final GoblinOperatorTable gOpTable = new GoblinOperatorTable();
+      functionRegistry.register(gOpTable);
+      this.operatorTable = SqlOperatorTables.chain(gOpTable);
+    } else {
+      this.operatorTable = SqlOperatorTables.chain();
+    }
     this.validator = new MySqlValidator(operatorTable, catalogReader, typeFactory);
   }
 
@@ -83,8 +92,7 @@ public class SqlPlannerConf {
       final MetaIntegrates.MySchema defaultSchema =
           new MetaIntegrates.MySchema(catalogService, typeFactory, defaultSchemaName);
       final MetaIntegrates.MySchemaWrapper defaultSchemaWrapper =
-          new MetaIntegrates.MySchemaWrapper(
-              rootSchemaWrapper, defaultSchema, defaultSchemaName);
+          new MetaIntegrates.MySchemaWrapper(rootSchemaWrapper, defaultSchema, defaultSchemaName);
 
       return new CatalogReader(rootSchemaWrapper, defaultSchemaWrapper, typeFactory, connConfig);
     }

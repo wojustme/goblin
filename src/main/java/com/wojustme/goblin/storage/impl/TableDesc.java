@@ -1,6 +1,5 @@
 package com.wojustme.goblin.storage.impl;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.wojustme.goblin.meta.catalog.model.CatalogColumn;
 import com.wojustme.goblin.meta.catalog.model.CatalogTable;
@@ -16,17 +15,20 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /** Model for describing table meta. */
-public class TableMetaDescription {
+public class TableDesc {
 
   private static final String FILE_NAME = "tbl.meta";
 
   private static final String COL_INFO_SEQ = ",";
 
   private CatalogTable catalogTable;
-  public final File myFile;
 
-  public TableMetaDescription(File dir) {
-    this.myFile = FileUtils.getFile(dir, FILE_NAME);
+  public final File tableDir;
+  public final File metaFile;
+
+  public TableDesc(File dir) {
+    this.tableDir = dir;
+    this.metaFile = FileUtils.getFile(dir, FILE_NAME);
   }
 
   public void setCatalogTable(CatalogTable catalogTable) {
@@ -45,7 +47,7 @@ public class TableMetaDescription {
                     col.fieldName() + COL_INFO_SEQ + col.dataType() + COL_INFO_SEQ + col.nullable())
             .toList();
     try {
-      FileUtils.writeLines(myFile, StandardCharsets.UTF_8.name(), colInfoList);
+      FileUtils.writeLines(metaFile, StandardCharsets.UTF_8.name(), colInfoList);
     } catch (IOException e) {
       throw new StorageException(
           e, "Write table %s meta into file failed.", catalogTable.tableName);
@@ -54,8 +56,8 @@ public class TableMetaDescription {
 
   public void readMeta() {
     try {
-      final List<String> colLines = FileUtils.readLines(myFile, StandardCharsets.UTF_8);
-      final File tblDir = myFile.getParentFile();
+      final List<String> colLines = FileUtils.readLines(metaFile, StandardCharsets.UTF_8);
+      final File tblDir = metaFile.getParentFile();
       final File dbDir = tblDir.getParentFile();
       final List<CatalogColumn> columns =
           colLines.stream()
@@ -74,7 +76,7 @@ public class TableMetaDescription {
       this.catalogTable =
           new CatalogTable(dbDir.getName(), tblDir.getName(), TableType.ENTITY, columns);
     } catch (IOException e) {
-      throw new StorageException(e, "Read table %s meta from file failed.", myFile);
+      throw new StorageException(e, "Read table %s meta from file failed.", metaFile);
     }
   }
 }

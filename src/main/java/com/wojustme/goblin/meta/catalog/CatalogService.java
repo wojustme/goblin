@@ -35,4 +35,6 @@ public interface CatalogService {
 
   /** List all table's names in target database */
   Set<String> listTables(String defaultDb);
+
+    void dropTable(String dbName, String tableName);
 }

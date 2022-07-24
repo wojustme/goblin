@@ -26,6 +26,7 @@ data: {
       # Example: "org.apache.calcite.sql.*", "java.util.List".
       imports: [
         "org.apache.calcite.sql.SqlCreate"
+        "org.apache.calcite.sql.SqlDrop"
         "com.wojustme.goblin.sql.parser.*"
       ]
 
@@ -424,6 +425,7 @@ data: {
       # Each must accept arguments "(SqlParserPos pos)".
       # Example: "SqlDropSchema".
       dropStatementParserMethods: [
+        "SqlDropTable"
       ]
 
       # Binary operators tokens.
@@ -444,6 +446,7 @@ data: {
       implementationFiles: [
         "Common.ftl"
         "CreateTable.ftl"
+        "DropTable.ftl"
         "CreateDatabase.ftl"
         "Show.ftl"
         "UseDatabase.ftl"

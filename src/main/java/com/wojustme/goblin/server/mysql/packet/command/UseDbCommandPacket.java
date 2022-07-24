@@ -2,7 +2,7 @@ package com.wojustme.goblin.server.mysql.packet.command;
 
 import com.google.common.base.Preconditions;
 import com.wojustme.goblin.server.handler.SessionHandler;
-import com.wojustme.goblin.server.handler.result.DDLResult;
+import com.wojustme.goblin.server.handler.result.AffectSummaryResult;
 import com.wojustme.goblin.server.handler.result.HandlerResult;
 import com.wojustme.goblin.server.mysql.protocol.Command;
 
@@ -24,7 +24,7 @@ public class UseDbCommandPacket extends CommandPacket {
         database);
     sessionHandler.catalogService.setDefaultDb(database);
     sessionHandler.userSession.setDatabase(database);
-    return new DDLResult(1);
+    return new AffectSummaryResult(1);
   }
 
   @Override

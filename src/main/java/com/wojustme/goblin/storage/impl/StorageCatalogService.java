@@ -4,13 +4,13 @@ import com.google.common.base.Preconditions;
 import com.wojustme.goblin.meta.catalog.CatalogService;
 import com.wojustme.goblin.meta.catalog.model.CatalogDatabase;
 import com.wojustme.goblin.meta.catalog.model.CatalogTable;
-import com.wojustme.goblin.meta.catalog.model.TableType;
 import com.wojustme.goblin.storage.DataStorageManager;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -83,12 +83,12 @@ public class StorageCatalogService implements CatalogService {
   @Override
   public CatalogTable getTable(String dbName, String tableName) {
     Preconditions.checkArgument(
-        dbName != null && tableName != null, "Database or table could be NULL.");
+        dbName != null && tableName != null, "Database and table couldn't be NULL.");
     final File tblDir = FileUtils.getFile(storageManager.rootDir(), dbName, tableName);
     if (dirExists(tblDir)) {
-      final TableMetaDescription tableMetaDescription = new TableMetaDescription(tblDir);
-      tableMetaDescription.readMeta();
-      return tableMetaDescription.getCatalogTable();
+      final TableDesc tableDesc = new TableDesc(tblDir);
+      tableDesc.readMeta();
+      return tableDesc.getCatalogTable();
     } else {
       return null;
     }
@@ -115,6 +115,16 @@ public class StorageCatalogService implements CatalogService {
         .filter(File::isDirectory)
         .map(File::getName)
         .collect(Collectors.toSet());
+  }
+
+  @Override
+  public void dropTable(String dbName, String tableName) {
+    final File tblDir = FileUtils.getFile(storageManager.rootDir(), dbName, tableName);
+    try {
+      FileUtils.forceDeleteOnExit(tblDir);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private boolean dirExists(File dir) {

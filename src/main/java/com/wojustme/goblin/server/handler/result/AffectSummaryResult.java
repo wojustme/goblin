@@ -1,10 +1,10 @@
 package com.wojustme.goblin.server.handler.result;
 
-public class DDLResult extends HandlerResult {
+public class AffectSummaryResult extends HandlerResult {
 
   private final int affect;
 
-  public DDLResult(int affect) {
+  public AffectSummaryResult(int affect) {
     this.affect = affect;
   }
 

@@ -1,14 +1,11 @@
 package com.wojustme.goblin.common;
 
+import com.wojustme.goblin.fun.FunctionRegistry;
 import com.wojustme.goblin.storage.DataStorageManager;
 
-/** Single instance. */
-public class GoblinContext {
+/**
+ * Single Goblin context instance.
+ */
+public record GoblinContext(DataStorageManager storageManager, FunctionRegistry functionRegistry) {
 
-  /** Storage manager */
-  public final DataStorageManager storageManager;
-
-  public GoblinContext(DataStorageManager storageManager) {
-    this.storageManager = storageManager;
-  }
 }

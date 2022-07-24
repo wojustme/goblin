@@ -8,8 +8,6 @@ import java.util.List;
 
 public class GoblinConstExecutor implements RexExecutor {
 
-    @Override
-    public void reduce(RexBuilder rexBuilder, List<RexNode> constExps, List<RexNode> reducedValues) {
-
-    }
+  @Override
+  public void reduce(RexBuilder rexBuilder, List<RexNode> constExps, List<RexNode> reducedValues) {}
 }

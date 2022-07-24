@@ -4,7 +4,7 @@ import com.wojustme.goblin.common.GoblinContext;
 import com.wojustme.goblin.common.UserSession;
 import com.wojustme.goblin.meta.catalog.model.DataType;
 import com.wojustme.goblin.server.handler.SessionHandler;
-import com.wojustme.goblin.server.handler.result.DDLResult;
+import com.wojustme.goblin.server.handler.result.AffectSummaryResult;
 import com.wojustme.goblin.server.handler.result.FailedResult;
 import com.wojustme.goblin.server.handler.result.HandlerResult;
 import com.wojustme.goblin.server.handler.result.SucceedResult;
@@ -138,7 +138,7 @@ public class MyServerHandler extends ChannelInboundHandlerAdapter {
       HandlerResult result = command.handle(sessionHandler);
       switch (result) {
         case SucceedResult succeedResult -> okFlush(ctx, command.sequenceId, succeedResult);
-        case DDLResult ddlResult -> ddlFlush(ctx, command.sequenceId, ddlResult);
+        case AffectSummaryResult affectSummaryResult -> ddlFlush(ctx, command.sequenceId, affectSummaryResult);
         case FailedResult failedResult -> errorFlush(ctx, command.sequenceId, failedResult);
         default -> throw new RuntimeException("Not support result type: " + result.getClass());
       }
@@ -177,12 +177,12 @@ public class MyServerHandler extends ChannelInboundHandlerAdapter {
   }
 
 
-  private void ddlFlush(ChannelHandlerContext ctx, int sequenceId, DDLResult ddlResult) {
+  private void ddlFlush(ChannelHandlerContext ctx, int sequenceId, AffectSummaryResult affectSummaryResult) {
     ctx.writeAndFlush(
             OkResponsePacket.builder()
                     .addStatusFlags(ServerStatusFlags.SERVER_STATUS_AUTOCOMMIT)
                     .sequenceId(++sequenceId)
-                    .affectedRows(ddlResult.getAffect())
+                    .affectedRows(affectSummaryResult.getAffect())
                     .build());
   }
 
